@@ -10,13 +10,16 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
 
-  web:
+  app:
     build: .
-    command: python3 manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - .:/django
+    
     ports:
       - "8000:8000"
+    container_name: django_container
+    image: app:django
+    command: python3 manage.py runserver 0.0.0.0:8000
     depends_on:
       - db
     env_file:
@@ -29,6 +32,3 @@ services:
       - db
     env_file:
       - .env
-
-volumes:
-  postgres_data:

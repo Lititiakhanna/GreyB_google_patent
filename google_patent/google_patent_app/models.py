@@ -14,7 +14,7 @@ class GooglePatentData(models.Model):
     result_link = models.TextField(null=False)
     representative_figure_link = models.TextField(null=False)
     number_of_authors = models.CharField(max_length=100, null=False)
-    number_of_viewers = models.IntegerField(auto_now=True)
+    number_of_viewers = models.IntegerField()
 
     class Meta:
         db_table = 'google_patent_data' 
