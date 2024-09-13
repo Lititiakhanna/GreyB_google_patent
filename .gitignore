@@ -1,0 +1,30 @@
+# Python bytecode
+__pycache__/
+migrations/
+*.py[cod]
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# Environments
+.env
+.venv/
+menv/
+ENV/
+env/
+.envrc
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
