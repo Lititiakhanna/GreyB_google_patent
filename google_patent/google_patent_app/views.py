@@ -1,9 +1,7 @@
-from django.shortcuts import render
-from django.db.models.functions import ExtractYear, Cast
-from django.db.models import IntegerField
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.cache import cache
 from .models import CategoricalFrequencyCount, GooglePatentData, NumericalStatistics
 
 class SummaryAPIView(APIView):
@@ -25,13 +23,12 @@ class QueryPatentView(APIView):
     def get(self, request, *args, **kwargs):
 
         patent_year = request.query_params.get('patent_year')
+        current_value = cache.get(int(patent_year))
+            
         if patent_year:
             try:
                 patents = GooglePatentData.objects.filter(publication_date__startswith=patent_year)
-
-                if patents.exists():
-                    data = {
-                        f'Patent Year: {patent_year}':[{'Patent ID': patent.id,
+                patent_data_list= [{'Patent ID': patent.id,
                                                         'Patent Title': patent.title,
                                                         'Assignee': patent.assignee,
                                                         'Priority Date': patent.priority_date,
@@ -42,8 +39,23 @@ class QueryPatentView(APIView):
                                                         'Representative Figure Link': patent.representative_figure_link,
                                                         'Number of Authors': patent.number_of_authors,
                                                         'Number of Viewers': patent.number_of_viewers} for patent in patents]
-                    }
-                    return Response(data, status=status.HTTP_200_OK)
+                if patents.exists():
+                    key = int(patent_year)
+                    current_value = cache.get(key)
+            
+                    if current_value is None:
+                        # print('no redis')
+                        data = {
+                            f'Patent Year: {patent_year}': patent_data_list
+                        }
+                        cache.set(key, patent_data_list, timeout=None)
+                        return Response(data, status=status.HTTP_200_OK)
+                    else:
+                        data = {
+                            f'Patent Year: {patent_year}': current_value
+                        }
+                        # print('redis')
+                        return Response(data, status=status.HTTP_200_OK)
                 else:
                     return Response({"message": "No patents found for the year provided."}, status=status.HTTP_404_NOT_FOUND)
             except Exception:
